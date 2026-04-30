@@ -1,0 +1,6 @@
+{
+  "name": "EcoSustain",
+  "description": "Eco-tourism platform with AI consultant for village development, disaster mitigation, waste management, and sustainable activity scheduling.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["AI Analysis", "Disaster Alarms", "Waste Tracking"]
+}
