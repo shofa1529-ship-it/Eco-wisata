@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Megaphone, Loader2, Sparkles, Share2, Instagram, Facebook, Globe, Image as ImageIcon, Download, Maximize2 } from 'lucide-react';
+import { Send, Megaphone, Loader2, Sparkles, Share2, Instagram, Facebook, Globe, Image as ImageIcon, Download, Maximize2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import { getConsultation, generateAIImage } from '../services/geminiService';
@@ -10,6 +10,7 @@ export default function PromotionAI() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +19,7 @@ export default function PromotionAI() {
     setIsLoading(true);
     setResponse(null);
     setImageUrl(null);
+    setError(null);
 
     const prompt = `
       Bertindaklah sebagai Ahli Pemasaran Digital Pariwisata Berkelanjutan. 
@@ -35,9 +37,9 @@ export default function PromotionAI() {
     try {
       const result = await getConsultation(prompt);
       setResponse(result);
-    } catch (error) {
-      console.error(error);
-      setResponse("Maaf, terjadi kendala teknis. Mohon coba lagi nanti.");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Gagal menghasilkan strategi promosi. Silakan coba lagi.");
     } finally {
       setIsLoading(false);
     }
@@ -115,6 +117,17 @@ export default function PromotionAI() {
             </p>
           </div>
         </form>
+
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="p-6 bg-red-50 border border-red-100 rounded-[32px] flex items-center gap-4 text-red-600 mt-6"
+          >
+            <AlertCircle size={24} className="shrink-0" />
+            <p className="text-sm font-light italic">{error}</p>
+          </motion.div>
+        )}
       </div>
 
       {(isLoading || isGeneratingImage) && !response && !imageUrl && (

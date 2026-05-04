@@ -10,12 +10,14 @@ export default function DisasterMitigation() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleAISearch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim() || isLoading) return;
     setIsLoading(true);
     setAiResponse(null);
+    setError(null);
     setImageUrl(null);
     
     const system = "Anda adalah pakar mitigasi bencana untuk desa wisata di Indonesia. Berikan analisis risiko dan langkah pencegahan berdasarkan deskripsi geografi dan kondisi desa yang diberikan. Sertakan tips keselamatan untuk wisatawan.";
@@ -28,8 +30,9 @@ export default function DisasterMitigation() {
       setIsGeneratingImage(true);
       const img = await generateAIImage(prompt, 'mitigation');
       setImageUrl(img);
-    } catch (error) {
-      console.error(error);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Gagal menghubungi Guardian AI. Mohon coba lagi.");
     } finally {
       setIsLoading(false);
       setIsGeneratingImage(false);
@@ -163,6 +166,17 @@ export default function DisasterMitigation() {
                 {isLoading ? <Loader2 size={18} className="animate-spin" /> : <Send size={18} />}
               </button>
             </form>
+
+            {error && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="p-6 bg-red-50 border border-red-100 rounded-[32px] flex items-center gap-4 text-red-600 mt-6"
+              >
+                <AlertCircle size={24} className="shrink-0" />
+                <p className="text-sm font-light italic">{error}</p>
+              </motion.div>
+            )}
           </div>
           <div className="col-span-12 lg:col-span-8">
              {(isLoading || isGeneratingImage) && !aiResponse && !imageUrl ? (

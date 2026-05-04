@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Send, Bot, Loader2, Sparkles, AlertCircle } from 'lucide-react';
+import { Send, Bot, Loader2, Sparkles, AlertCircle, Leaf, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import { getConsultation, generateAIImage } from '../services/geminiService';
@@ -10,6 +10,16 @@ export default function AIConsultant() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [activeDimension, setActiveDimension] = useState<string | null>(null);
+
+  const dimensions = [
+    { id: 'culture', label: 'Budaya & Adat', icon: Sparkles, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { id: 'nature', label: 'Alam & Ekowisata', icon: Leaf, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { id: 'economy', label: 'Ekonomi Kreatif', icon: Bot, color: 'text-sky-600', bg: 'bg-sky-50' },
+    { id: 'infra', label: 'Infrastruktur', icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,27 +28,36 @@ export default function AIConsultant() {
     setIsLoading(true);
     setResponse(null);
     setImageUrl(null);
+    setError(null);
     
-    const contextPrompt = `Tolong analisis potensi desa berikut untuk pengembangan desa wisata: "${input}". 
-    Mohon berikan detail mengenai:
-    1. Analisis SWOT (Strengths, Weaknesses, Opportunities, Threats).
-    2. Peluang UMKM atau bisnis lokal yang bisa dikembangkan.
-    3. Langkah praktis untuk pembukaan atau pengembangan.
-    4. Strategi menjaga keberlanjutan sumber daya alam.`;
+    const contextPrompt = `
+    IDENTITAS: Anda adalah Konsultan Utama Transformasi Desa Berkelanjutan.
+    FOKUS ANALISIS: Potensi desa "${input}".
+    DIMENSI SPESIFIK: ${activeDimension ? dimensions.find(d => d.id === activeDimension)?.label : 'Analisis Menyeluruh'}.
+    
+    INTRUKSI KHUSUS:
+    Berikan analisis mendalam, kreatif, dan spesifik yang mencakup:
+    1. DNA DESA: Apa elemen paling unik (The Soul of the Village) yang bisa dijual ke publik?
+    2. BLUEPRINT INFRASTRUKTUR: Bagaimana membangun fasilitas tanpa merusak ekosistem?
+    3. EKONOMI SIRKULAR: Bagaimana limbah desa bisa menjadi produk premium?
+    4. DIGITAL BRANDING: Strategi agar viral dengan cara yang elegan dan otentik.
+    5. IMPACT SCORE: Estimasi dampak positif terhadap ekonomi warga lokal.
+    
+    Gunakan format laporan yang dinamis dengan visualisasi teks (bullet points, bold highlights).`;
 
     try {
       const result = await getConsultation(contextPrompt);
       setResponse(result);
       
       // Auto-generate a conceptual image if the input is descriptive
-      if (input.length > 20) {
+      if (input.length > 5) {
         setIsGeneratingImage(true);
         const img = await generateAIImage(input, 'consultancy');
         setImageUrl(img);
       }
-    } catch (error) {
-      console.error(error);
-      setResponse("Terjadi kendala teknis. Mohon coba sesaat lagi.");
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Terjadi kendala teknis. Mohon coba sesaat lagi.");
     } finally {
       setIsLoading(false);
       setIsGeneratingImage(false);
@@ -58,7 +77,25 @@ export default function AIConsultant() {
         </div>
       </div>
 
-      <div className="bg-white rounded-[40px] p-10 border border-emerald-50 shadow-sm">
+      <div className="bg-white rounded-[40px] p-10 border border-emerald-50 shadow-sm space-y-8">
+        <div className="flex flex-wrap gap-4">
+          {dimensions.map((dim) => (
+            <button
+              key={dim.id}
+              type="button"
+              onClick={() => setActiveDimension(activeDimension === dim.id ? null : dim.id)}
+              className={`flex items-center gap-3 px-6 py-3 rounded-2xl border transition-all ${
+                activeDimension === dim.id 
+                  ? `${dim.bg} border-current ${dim.color} shadow-lg shadow-emerald-900/5` 
+                  : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'
+              }`}
+            >
+              <dim.icon size={18} />
+              <span className="text-[10px] uppercase tracking-widest font-bold font-sans">{dim.label}</span>
+            </button>
+          ))}
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="relative">
             <textarea
@@ -83,6 +120,17 @@ export default function AIConsultant() {
             </p>
           </div>
         </form>
+
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="p-6 bg-red-50 border border-red-100 rounded-[32px] flex items-center gap-4 text-red-600"
+          >
+            <AlertCircle size={24} className="shrink-0" />
+            <p className="text-sm font-light italic">{error}</p>
+          </motion.div>
+        )}
       </div>
 
       {isLoading && (

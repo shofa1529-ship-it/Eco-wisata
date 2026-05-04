@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   UserRound, Plus, Search, MoreVertical, 
   Bot, Send, Loader2, Sparkles, Network, 
+  AlertCircle,
   Users, Briefcase, GraduationCap,
   BadgeCheck, Calendar, Clock
 } from 'lucide-react';
@@ -33,6 +34,7 @@ export default function HRManagement() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [isLoadingAI, setIsLoadingAI] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [errorAI, setErrorAI] = useState<string | null>(null);
 
   const filteredMembers = members.filter(m => 
     m.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -45,6 +47,8 @@ export default function HRManagement() {
 
     setIsLoadingAI(true);
     setAiResponse(null);
+    setErrorAI(null);
+    setImageUrl(null);
 
     const fullPrompt = `
       Anda adalah Ahli Pengembangan SDM dan Pemberdayaan Komunitas untuk Desa Wisata (Sustainable Tourism).
@@ -69,9 +73,9 @@ export default function HRManagement() {
       setIsGeneratingImage(true);
       const img = await generateAIImage(aiPrompt, 'hr');
       setImageUrl(img);
-    } catch (error) {
-      console.error(error);
-      setAiResponse("Maaf, inteligensia kami sedang mengalami gangguan sinkronisasi dengan kearifan lokal. Mohon coba lagi.");
+    } catch (err: any) {
+      console.error(err);
+      setErrorAI(err.message || "Maaf, inteligensia kami sedang mengalami gangguan sinkronisasi dengan kearifan lokal. Mohon coba lagi.");
     } finally {
       setIsLoadingAI(false);
       setIsGeneratingImage(false);
@@ -129,6 +133,17 @@ export default function HRManagement() {
                 {isLoadingAI ? <Loader2 size={24} className="animate-spin" /> : <Send size={24} />}
               </button>
             </form>
+
+            {errorAI && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="p-6 bg-red-50 border border-red-100 rounded-[32px] flex items-center gap-4 text-red-600"
+              >
+                <AlertCircle size={24} className="shrink-0" />
+                <p className="text-sm font-light italic">{errorAI}</p>
+              </motion.div>
+            )}
 
             <div className="flex flex-wrap gap-3">
               {['SOP Lokal', 'Struktur BUMDes', 'Pelatihan Relawan', 'Inklusivitas'].map((label) => (
