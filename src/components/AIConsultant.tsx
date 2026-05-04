@@ -154,7 +154,7 @@ export default function AIConsultant() {
                 <div className="w-12 h-12 rounded-full border border-emerald-100 flex items-center justify-center text-slate-300">
                   <Bot size={20} strokeWidth={1} />
                 </div>
-                <p className="text-xs text-slate-400 font-light italic max-w-xs">Data dianalisis menggunakan Gemini 1.5 Flash untuk akurasi kontekstual lokal.</p>
+                <p className="text-xs text-slate-400 font-light italic max-w-xs">Data dianalisis menggunakan Gemini 3 Flash untuk akurasi kontekstual lokal terbaik.</p>
               </div>
               <button className="px-10 py-4 bg-emerald-50 text-eco-green rounded-full font-bold text-[9px] uppercase tracking-widest hover:bg-emerald-100 transition-all">
                 Unduh PDF Laporan
